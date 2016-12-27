@@ -11,6 +11,8 @@ output:
 ##Introducción con el Objetivo del Análisis:
 En el siguiente trabajo se presenta un análisis exploratorio sobre el estudio de unos alumnos de dos escuelas en las materias de Matemáticas y Portugués. El objeto del análisis es la comprensión, para posterior mejora de estos atributos, de los factores que alteran el rendimiento escolar de estos alumnos, viéndose reflejado en sus notas del tercer trimestre. Estas alteraciones serán variables que se proyectarán sobre los resultados de cada uno de los alumnos para comprobar el nivel de relevancia para la obtención de resultados y un patrón que indique si tienen influencia en su actividad o no.
 
+Los datasets empleados refieren a un conjunto de alumnos de dos centros de Portugal diferentes, que con motivo de la mejora del nivel educacional ofrecen estos datos para la búsqueda y hallazgo de algún tipo de relación entre los datos proporcionados y su nivel académico.
+
 Se procederá con la adición de librerías, comprobación de la disponibilidad de las fuentes de datasets, limpieza y tratado de los datos y estudio de los mismos bajo diferentes perspectivas. Al final se ofrecerá un análisis de las conclusiones obtenidas.
 
 ##Carga de Datos y estudio de trabajo:

@@ -1,0 +1,271 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+  **R Markdown Document.**
+  **Práctica Análisis Exploratorio R.**
+
+
+
+##Introducción con el Objetivo del Análisis:
+En el siguiente trabajo se presenta un análisis exploratorio sobre el estudio de unos alumnos de dos escuelas en las materias de Matemáticas y Portugués. El objeto del análisis es la comprensión, para posterior mejora de estos atributos, de los factores que alteran el rendimiento escolar de estos alumnos, viéndose reflejado en sus notas del tercer trimestre. Estas alteraciones serán variables que se proyectarán sobre los resultados de cada uno de los alumnos para comprobar el nivel de relevancia para la obtención de resultados y un patrón que indique si tienen influencia en su actividad o no.
+
+Se procederá con la adición de librerías, comprobación de la disponibilidad de las fuentes de datasets, limpieza y tratado de los datos y estudio de los mismos bajo diferentes perspectivas. Al final se ofrecerá un análisis de las conclusiones obtenidas.
+
+##Carga de Datos y estudio de trabajo:
+En primer lugar limpiamos el directorio de trabajo.
+
+```{r echo=FALSE}
+rm(list=ls())
+
+```
+
+Comprobamos la existencia de los datasets que vamos a emplear.
+También incluimos las librerías para el Análisis Exploratorio.
+```{r }
+currentDir <- "./data/";
+
+if (!file.exists("./data/student-mat.csv")) {
+        stop(paste0("Se necesita que el directorio datos esté en: ",currentDir))
+}
+
+if (!file.exists("./data/student-mat.csv")) {
+        stop(paste0("Se necesita que el directorio datos esté en: ",currentDir))
+}
+
+libs <- c("ggplot2","gridExtra","graphics", "grid", "lattice")
+  
+  for (i in libs)
+  {
+    print(i)
+    if(!require(i, character.only = TRUE)) 
+    { 
+        install.packages(i); library(i) 
+    }
+  }
+  
+
+
+```
+
+
+Incluimos las librerías necesarias para el análisis de datos.
+
+```{r}
+
+#getwd()
+
+#dataPath <- "./data/";
+
+#Tabla de estudiantes de Matemáticas
+studentsMat = read.table(file.path(currentDir, "student-mat.csv"),sep=";",header=TRUE)
+
+
+#Tabla de estudiantes de Portugués
+studentsPor = read.table(file.path(currentDir, "student-por.csv"),sep=";",header=TRUE)
+
+
+
+
+
+
+```
+
+
+
+##Análisis Descriptivo:
+
+Anates de empezar a utilizar los datos, hay que realizar un estudio previo para comprobar el estado de sus valores, y si son aptos y útiles para el proyecto.
+
+
+Vemos un resumen de los datos de las tablas que acabamos de leer.
+Para studentsPor (estudiantes de Portugués)
+
+```{r}
+  summary(studentsPor)
+```
+
+Para studentsMat (estudiantes de Matematicas)
+
+```{r}
+  summary(studentsMat)
+```
+
+Realizamos también una tabla conjunta que contenga los datos de ambas tablas para el análisis.
+```{r}
+
+studentsMatPor=merge(studentsMat,studentsPor,by=c("school","sex","age","address","famsize","Pstatus","Medu","Fedu","Mjob","Fjob","reason","nursery","internet"))
+
+
+#Número de filas que tenemos en total:
+print(nrow(studentsMatPor))
+
+```
+
+Vamos a analizar que las columnas del data frame que contiene los datos de estudiantes de Matemáticas y Portgués contenga tipos de datos válidos.
+
+
+```{r}
+
+  lapply(studentsMatPor, class)
+
+#Los tipos de datos parecen válidos para las categorías "factor" e "integer" elegidas.
+```
+
+Comprobamos la existencia de valores n/a en el data frame de todos los estudiantes.
+
+```{r}
+  filasNaMatPor <- studentsMatPor[rowSums(is.na(studentsMatPor)) > 0, ]
+  dim(filasNaMatPor)
+  
+  
+```
+
+Obtenemos 0 filas y 53 columnas.
+
+Es decir, de los datos combinados de estudiantes de Matemáticas y Portugués obtenemos 53 columnas, ninguna de ellas conteniendo filas con valores n/a.
+
+
+Aplicamos lo mismo para las columnas:
+
+```{r}
+  columnasNaMatPor <- studentsMatPor[colSums(is.na(studentsMatPor)) > 0]
+  print(dim(columnasNaMatPor))
+  #382, 0
+  
+  print(names(columnasNaMatPor))
+```
+
+  Obtenemos 382 filas, donde ninguna de sus columnas es un n/a.
+  
+  
+Otra parte del preprocesado de datos consiste en igualar todos los campos de las cadenas de texto a minúsculas para evitar errores.
+
+A partir de la función names() (que empleamos arriba) podemos conocer los nombres de las columnas de la tabla y modificarlos con la función tolower.Lo realizamos con las tres tablas sobre las que trabajamos, mostrando el resultado de la que contiene los datos mixtos de Matemáticas y Portugués.
+
+
+```{r}
+  names(studentsPor) <- tolower(names(studentsPor))
+  #☺names(studentsPor)
+  
+  names(studentsMat) <- tolower(names(studentsMat))
+  #names(studentsMat)
+  
+  names(studentsMatPor) <- tolower(names(studentsMatPor))
+  names(studentsMatPor)
+```
+
+Vemos que se han transformado en minúsucla todos los nombres de las columnas, especialmente observable en los que contienen a las notas trimestrales, G1, G2 y G3.
+
+
+Vamos ahora a eliminar las barras bajas o "underscores" de los atributos de texto del data frame.
+
+Echando un vistazo a los datos, vemos que el valor "at_home" de los trabajos de los padres contiene uno.
+
+```{r}
+length(grep("_",studentsMat$mjob))
+length(grep("_",studentsMat$fjob))
+#59 y 20
+
+length(grep("_",studentsPor$mjob))
+length(grep("_",studentsPor$fjob))
+#135 y 42
+
+length(grep("_",studentsMatPor$mjob))
+length(grep("_",studentsMatPor$fjob))
+#53 y 16
+```
+
+ 
+Los reemplazamos.
+
+```{r}
+#Para Matemáticas:
+  studentsMat$mjob <- gsub("_","",studentsMat$mjob)
+  studentsMat$fjob <- gsub("_","",studentsMat$fjob)
+
+#Para Portugués:
+  studentsPor$mjob <- gsub("_","",studentsPor$mjob)
+  studentsPor$fjob <- gsub("_","",studentsPor$fjob)
+  
+#Para Ambos:  
+  studentsMatPor$mjob <- gsub("_","",studentsMatPor$mjob)
+  studentsMatPor$fjob <- gsub("_","",studentsMatPor$fjob)
+  
+```
+
+
+
+
+##Anláisis Exploratorio:
+
+Comenzamos a analizar los datos de los alumnos.
+Emplearemos el data frame de estudiantes de Portugués y Matemáticas.
+
+Vamos a comprobar si la disposición de internet influye en algo en las calificaciones obtenidas en las dos escuelas en Matemáticas.
+
+```{r}
+
+plotInternet1 <- qplot(internet, g3.x, 
+                   data = studentsMatPor[studentsMatPor$school=="GP",])
+
+
+plotInternet2 <- qplot(internet, g3.x, 
+                   data = studentsMatPor[studentsMatPor$school=="MS",])
+
+
+grid.arrange(plotInternet1, plotInternet2, nrow=1)
+
+```
+
+Vamos a comprobar si el nivel de educación de la madre es relevante para las notas de sus hijos obtenidas en ambas escuelas en Matemáticas.
+
+
+```{r}
+plotMedu1 <- qplot(medu, g3.x, 
+                   data = studentsMatPor[studentsMatPor$school=="GP",])
+
+
+plotMedu2 <- qplot(medu, g3.x, 
+                   data = studentsMatPor[studentsMatPor$school=="MS",])
+
+
+grid.arrange(plotMedu1, plotMedu2, nrow=1)
+```
+
+Ahora comprobamos en qué manera el sexo y la edad están distribuidos en las notas finales obtenidas para los estudiantes de matemáticas de ambas escuelas.
+
+```{r}
+plotSex1 <- qplot(sex, g3.x, 
+                   data = studentsMatPor[studentsMatPor$school=="GP",])
+
+
+plotSex2 <- qplot(sex, g3.x, 
+                   data = studentsMatPor[studentsMatPor$school=="MS",])
+
+
+grid.arrange(plotSex1, plotSex2, nrow=1)
+```
+
+```{r}
+plotAge1 <- qplot(age, g3.x, 
+                   data = studentsMatPor[studentsMatPor$school=="GP",])
+
+
+plotAge2 <- qplot(age, g3.x, 
+                   data = studentsMatPor[studentsMatPor$school=="MS",])
+
+
+grid.arrange(plotAge1, plotAge2, nrow=1)
+```
+
+
+##Conclusiones:
+A partir del siguiente análisis exploratorio hemos visto diferentes interpretaciones de los datos de los estudiantes para su calificación final G3, en base a diferentes conceptos como el sexo, la edad, el nivel educacional de la madre y la disponibilidad de internet.
+
+Los resultados muestra una distribución irregular en cuanto a sexo, edad e internet: Hay tanto valores de G3 suspensos y aprobados en cada una de las escuelas, que no muestran relación alguna con los parámetros comentados.No obstante se aprecia que las notas más altas están comprendidas entre los alumnos de 16 a 18 años.
+
+En cambio, respecto al nivel educacional de la madre, se observa que los estudiantes de matemáticas cuya madre recibió una educación de nivel 4 (educación superior), presentan una ligera tendencia a suspender menos que los ejemplares con estudios de la madre inferiores. También se observa que son el mayor tipo de población.
+Se ha tomado este dato ya que comprobando los empleos de los padres durante el análisis descriptivo, se observó que de las familias que tienen un miembro que trabaja en casa ("at_home"), una gran mayoría son madres, y se supuso que durante ese tiempo podrían ayudar a sus hijos con sus tareas, para potenciar su rendimiento escolar reflejado en G3.
+

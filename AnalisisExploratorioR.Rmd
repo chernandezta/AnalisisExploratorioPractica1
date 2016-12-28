@@ -32,7 +32,7 @@ if (!file.exists("./data/student-mat.csv")) {
         stop(paste0("Se necesita que el directorio datos esté en: ",currentDir))
 }
 
-if (!file.exists("./data/student-mat.csv")) {
+if (!file.exists("./data/student-por.csv")) {
         stop(paste0("Se necesita que el directorio datos esté en: ",currentDir))
 }
 
